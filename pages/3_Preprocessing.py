@@ -1,3 +1,6 @@
+```python
+# pages/3_Preprocessing.py
+
 import streamlit as st
 import pandas as pd
 
@@ -16,6 +19,8 @@ st.set_page_config(
 
 st.title("🧹 Preprocessing Data")
 
+st.markdown("---")
+
 # ==========================================================
 # LOAD DATA
 # ==========================================================
@@ -25,24 +30,30 @@ df = get_all_data()
 if df.empty:
 
     st.warning(
-        "Database masih kosong."
+        "Belum ada data yang dapat diproses."
     )
 
     st.stop()
 
 # ==========================================================
-# DATA ASLI
+# DATA AWAL
 # ==========================================================
 
-st.subheader("Dataset Asli")
-
-st.dataframe(
-    df,
-    use_container_width=True,
-    hide_index=True
+tab1, tab2, tab3 = st.tabs(
+    [
+        "📄 Data Awal",
+        "🧹 Data Bersih",
+        "📊 StandardScaler"
+    ]
 )
 
-st.divider()
+with tab1:
+
+    st.dataframe(
+        df,
+        use_container_width=True,
+        hide_index=True
+    )
 
 # ==========================================================
 # CLEANING
@@ -50,44 +61,30 @@ st.divider()
 
 clean_df = clean_dataframe(df)
 
-st.subheader("Dataset Setelah Cleaning")
+with tab2:
 
-st.dataframe(
-    clean_df,
-    use_container_width=True,
-    hide_index=True
-)
-
-st.divider()
-
-# ==========================================================
-# FITUR YANG DIGUNAKAN
-# ==========================================================
-
-fitur = get_feature_columns()
-
-st.subheader("Fitur Clustering")
-
-st.write(fitur)
-
-st.divider()
+    st.dataframe(
+        clean_df,
+        use_container_width=True,
+        hide_index=True
+    )
 
 # ==========================================================
 # STANDARD SCALER
 # ==========================================================
 
-scaled_df, scaler = preprocess_data(df)
+scaled_df, scaler = preprocess_data(clean_df)
 
-st.subheader("Hasil StandardScaler")
+with tab3:
 
-st.dataframe(
-    scaled_df,
-    use_container_width=True,
-    hide_index=True
-)
+    st.dataframe(
+        scaled_df,
+        use_container_width=True,
+        hide_index=True
+    )
 
 # ==========================================================
-# SIMPAN KE SESSION
+# SESSION
 # ==========================================================
 
 st.session_state["original_df"] = clean_df
@@ -96,24 +93,61 @@ st.session_state["scaled_df"] = scaled_df
 
 st.session_state["scaler"] = scaler
 
-st.success(
-    "Preprocessing berhasil dilakukan."
+# ==========================================================
+# FITUR
+# ==========================================================
+
+st.markdown("---")
+
+st.subheader("📌 Fitur Yang Digunakan")
+
+fitur = pd.DataFrame({
+    "Fitur": get_feature_columns()
+})
+
+st.dataframe(
+    fitur,
+    use_container_width=True,
+    hide_index=True
 )
 
-st.divider()
+# ==========================================================
+# RINGKASAN
+# ==========================================================
+
+st.markdown("---")
+
+c1, c2 = st.columns(2)
+
+with c1:
+
+    st.metric(
+        "Jumlah Data",
+        len(clean_df)
+    )
+
+with c2:
+
+    st.metric(
+        "Jumlah Fitur",
+        len(get_feature_columns())
+    )
 
 # ==========================================================
 # DOWNLOAD
 # ==========================================================
+
+st.markdown("---")
 
 csv = scaled_df.to_csv(
     index=False
 ).encode("utf-8")
 
 st.download_button(
-    label="Download Hasil Preprocessing",
+    label="⬇️ Download Hasil Preprocessing",
     data=csv,
     file_name="hasil_preprocessing.csv",
-    mime="text/csv"
+    mime="text/csv",
+    use_container_width=True
 )
-
+```
