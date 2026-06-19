@@ -3,13 +3,9 @@ import pandas as pd
 
 from utils.database import (
     get_all_data,
-    count_data,
-    import_csv,
-    truncate_table,
     insert_data,
-    update_data,
-    delete_data,
-    get_data_by_id
+    import_csv,
+    count_data
 )
 
 # =====================================================
@@ -18,52 +14,35 @@ from utils.database import (
 
 st.set_page_config(
     page_title="Kelola Data",
-    page_icon="📂",
+    page_icon="📋",
     layout="wide"
 )
 
-# =====================================================
-# HEADER
-# =====================================================
-
-st.title("📂 Kelola Data Transaksi")
-
-st.caption(
-    "Tambah, ubah, hapus, dan impor data transaksi Shopee Food."
-)
+st.title("📋 Kelola Data Transaksi Shopee Food")
+st.caption("Tambah data, import CSV, dan kelola dataset penelitian.")
 
 st.divider()
 
 # =====================================================
-# STATISTIK
+# RINGKASAN
 # =====================================================
 
-try:
-    total_data = count_data()
-except Exception:
-    total_data = 0
-
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 
 with col1:
     st.metric(
-        label="📦 Total Data",
-        value=total_data
+        "Total Data",
+        count_data()
     )
 
 with col2:
     st.metric(
-        label="💾 Database",
-        value="SQLite"
-    )
-
-with col3:
-    st.metric(
-        label="🤖 Status",
-        value="Aktif"
+        "Status",
+        "Siap Digunakan"
     )
 
 st.divider()
+
 # =====================================================
 # IMPORT CSV
 # =====================================================
@@ -79,230 +58,138 @@ if uploaded_file is not None:
 
     try:
 
-        # Membaca file CSV
-        preview = pd.read_csv(uploaded_file)
+        import_csv(uploaded_file)
 
-        st.success("✅ File berhasil dibaca.")
+        st.success("✅ Dataset berhasil diimport.")
 
-        st.write("### Preview Data")
-
-        st.dataframe(
-            preview.head(10),
-            use_container_width=True,
-            hide_index=True
-        )
-
-        col_import1, col_import2 = st.columns(2)
-
-        with col_import1:
-
-            if st.button(
-                "➕ Tambahkan ke Database",
-                use_container_width=True
-            ):
-
-                import_csv(preview)
-
-                st.success(
-                    "Data berhasil ditambahkan ke database."
-                )
-
-                st.rerun()
-
-        with col_import2:
-
-            if st.button(
-                "♻️ Ganti Seluruh Data",
-                use_container_width=True
-            ):
-
-                truncate_table()
-
-                import_csv(preview)
-
-                st.success(
-                    "Database berhasil diperbarui dengan data baru."
-                )
-
-                st.rerun()
+        st.rerun()
 
     except Exception as e:
 
-        st.error(
-            f"Gagal membaca file CSV: {e}"
-        )
+        st.error(f"Terjadi kesalahan: {e}")
 
 st.divider()
+
 # =====================================================
 # TAMBAH DATA MANUAL
 # =====================================================
 
-st.subheader("➕ Tambah Data Transaksi")
+st.subheader("➕ Tambah Data Manual")
 
-with st.form("form_tambah_data", clear_on_submit=True):
+with st.form("form_tambah"):
 
     col1, col2 = st.columns(2)
 
     with col1:
 
+        no = st.number_input(
+            "No",
+            min_value=1,
+            step=1
+        )
+
         username = st.text_input(
             "Username"
         )
 
-        menu_yang_dibeli = st.text_input(
+        menu = st.text_input(
             "Menu yang Dibeli"
         )
 
-        total_harga = st.number_input(
+        total = st.number_input(
             "Total Harga",
-            min_value=0.0,
-            value=0.0,
-            step=1000.0
+            min_value=0.0
         )
 
-        harga_per_menu = st.text_input(
-            "Harga per Menu"
-        )
-
-        jumlah_pesanan = st.number_input(
-            "Jumlah Pesanan",
-            min_value=1,
-            value=1,
-            step=1
+        harga_menu = st.number_input(
+            "Harga per Menu",
+            min_value=0.0
         )
 
     with col2:
 
-        rata_rata_harga = st.number_input(
+        jumlah = st.number_input(
+            "Jumlah Pesanan",
+            min_value=1
+        )
+
+        rata = st.number_input(
             "Rata-rata Harga",
-            min_value=0.0,
-            value=0.0,
-            step=1000.0
+            min_value=0.0
         )
 
-        waktu_persiapan_yang_diberikan = st.number_input(
-            "Waktu Persiapan yang Diberikan (menit)",
-            min_value=0.0,
-            value=0.0,
-            step=1.0
+        prep_diberikan = st.number_input(
+            "Waktu Persiapan Diberikan",
+            min_value=0.0
         )
 
-        waktu_persiapan_digunakan = st.number_input(
-            "Waktu Persiapan Digunakan (menit)",
-            min_value=0.0,
-            value=0.0,
-            step=1.0
+        prep_digunakan = st.number_input(
+            "Waktu Persiapan Digunakan",
+            min_value=0.0
         )
 
-        waktu_pesan = st.text_input(
-            "Waktu Pesan (contoh: 2025/05/10 12:30)"
+        waktu = st.text_input(
+            "Waktu Pesan"
         )
 
-    simpan = st.form_submit_button(
+    submit = st.form_submit_button(
         "💾 Simpan Data"
     )
 
-if simpan:
+    if submit:
 
-    if (
-        username.strip() == ""
-        or menu_yang_dibeli.strip() == ""
-        or waktu_pesan.strip() == ""
-    ):
-
-        st.warning(
-            "Username, Menu yang Dibeli, dan Waktu Pesan wajib diisi."
+        insert_data(
+            no=no,
+            username=username,
+            menu_yang_dibeli=menu,
+            Total_harga=total,
+            harga_per_menu=harga_menu,
+            Jumlah_pesanan=jumlah,
+            rata_rata_harga=rata,
+            waktu_persiapan_yang_diberikan=prep_diberikan,
+            waktu_persiapan_digunakan=prep_digunakan,
+            waktu_pesan=waktu
         )
 
-    else:
+        st.success("✅ Data berhasil ditambahkan.")
 
-        try:
+        st.rerun()
 
-            insert_data(
-
-                username=username,
-
-                menu_yang_dibeli=menu_yang_dibeli,
-
-                Total_harga=total_harga,
-
-                harga_per_menu=harga_per_menu,
-
-                Jumlah_pesanan=jumlah_pesanan,
-
-                rata_rata_harga=rata_rata_harga,
-
-                waktu_persiapan_yang_diberikan=waktu_persiapan_yang_diberikan,
-
-                waktu_persiapan_digunakan=waktu_persiapan_digunakan,
-
-                waktu_pesan=waktu_pesan
-
-            )
-
-            st.success(
-                "✅ Data berhasil ditambahkan."
-            )
-
-            st.rerun()
-
-        except Exception as e:
-
-            st.error(
-                f"Gagal menyimpan data: {e}"
-            )
+# =====================================================
+# TAMPILKAN DATA
+# =====================================================
 
 st.divider()
-
-# =====================================================
-# PENCARIAN DATA
-# =====================================================
-
-st.subheader("🔍 Pencarian Data")
+st.subheader("📊 Data Transaksi")
 
 df = get_all_data()
 
-keyword = st.text_input(
-    "Cari berdasarkan Username atau Menu yang Dibeli"
-)
+if not df.empty:
 
-if keyword:
-
-    keyword = keyword.lower()
-
-    df = df[
-        (
-            df["username"]
-            .astype(str)
-            .str.lower()
-            .str.contains(keyword, na=False)
-        )
-        |
-        (
-            df["menu_yang_dibeli"]
-            .astype(str)
-            .str.lower()
-            .str.contains(keyword, na=False)
-        )
-    ]
-
-st.write(f"**Jumlah data ditemukan:** {len(df)}")
-
-st.divider()
-
-# =====================================================
-# TABEL DATA
-# =====================================================
-
-st.subheader("📋 Data Transaksi Shopee Food")
-
-if df.empty:
-
-    st.info(
-        "Belum ada data yang tersedia."
+    keyword = st.text_input(
+        "🔍 Cari Username / Menu",
+        placeholder="Masukkan kata kunci..."
     )
 
-else:
+    if keyword:
+
+        keyword = keyword.lower()
+
+        df = df[
+            (
+                df["username"]
+                .astype(str)
+                .str.lower()
+                .str.contains(keyword, na=False)
+            )
+            |
+            (
+                df["menu_yang_dibeli"]
+                .astype(str)
+                .str.lower()
+                .str.contains(keyword, na=False)
+            )
+        ]
 
     st.dataframe(
         df,
@@ -310,189 +197,134 @@ else:
         hide_index=True
     )
 
-st.divider()
-
-# =====================================================
-# EDIT DATA
-# =====================================================
-
-st.subheader("✏️ Edit Data")
-
-data_edit = get_all_data()
-
-if not data_edit.empty:
-
-    id_edit = st.selectbox(
-        "Pilih ID yang akan diedit",
-        data_edit["id"].tolist(),
-        key="edit_id"
-    )
-
-    row = get_data_by_id(id_edit)
-
-    if row is not None:
-
-        with st.form("form_edit"):
-
-            username_edit = st.text_input(
-                "Username",
-                value=row["username"]
-            )
-
-            menu_edit = st.text_input(
-                "Menu yang Dibeli",
-                value=row["menu_yang_dibeli"]
-            )
-
-            total_edit = st.number_input(
-                "Total Harga",
-                min_value=0.0,
-                value=float(row["Total_harga"])
-            )
-
-            harga_menu_edit = st.text_input(
-                "Harga per Menu",
-                value=str(row["harga_per_menu"])
-            )
-
-            jumlah_edit = st.number_input(
-                "Jumlah Pesanan",
-                min_value=1,
-                value=int(row["Jumlah_pesanan"])
-            )
-
-            rata_edit = st.number_input(
-                "Rata-rata Harga",
-                min_value=0.0,
-                value=float(row["rata_rata_harga"])
-            )
-
-            wp_diberikan = st.number_input(
-                "Waktu Persiapan yang Diberikan",
-                min_value=0.0,
-                value=float(row["waktu_persiapan_yang_diberikan"])
-            )
-
-            wp_digunakan = st.number_input(
-                "Waktu Persiapan Digunakan",
-                min_value=0.0,
-                value=float(row["waktu_persiapan_digunakan"])
-            )
-
-            waktu_edit = st.text_input(
-                "Waktu Pesan",
-                value=row["waktu_pesan"]
-            )
-
-            submit_edit = st.form_submit_button(
-                "💾 Simpan Perubahan"
-            )
-
-        if submit_edit:
-
-            update_data(
-
-                id_data=id_edit,
-
-                username=username_edit,
-
-                menu_yang_dibeli=menu_edit,
-
-                Total_harga=total_edit,
-
-                harga_per_menu=harga_menu_edit,
-
-                Jumlah_pesanan=jumlah_edit,
-
-                rata_rata_harga=rata_edit,
-
-                waktu_persiapan_yang_diberikan=wp_diberikan,
-
-                waktu_persiapan_digunakan=wp_digunakan,
-
-                waktu_pesan=waktu_edit
-
-            )
-
-            st.success(
-                "✅ Data berhasil diperbarui."
-            )
-
-            st.rerun()
-
 else:
 
-    st.info(
-        "Belum ada data yang dapat diedit."
-    )
-
-st.divider()
+    st.info("Belum ada data pada database.")
 
 # =====================================================
 # HAPUS DATA
 # =====================================================
 
+st.divider()
 st.subheader("🗑️ Hapus Data")
 
-data_hapus = get_all_data()
-
-if not data_hapus.empty:
+if not df.empty:
 
     id_hapus = st.selectbox(
         "Pilih ID yang akan dihapus",
-        data_hapus["id"].tolist(),
-        key="hapus_id"
-    )
-
-    konfirmasi = st.checkbox(
-        "Saya yakin ingin menghapus data ini."
+        df["id"].tolist()
     )
 
     if st.button(
-        "🗑️ Hapus Data",
-        use_container_width=True
+        "Hapus Data",
+        type="primary"
     ):
 
-        if konfirmasi:
+        from utils.database import delete_data
 
-            delete_data(id_hapus)
+        delete_data(id_hapus)
 
-            st.success(
-                "✅ Data berhasil dihapus."
-            )
+        st.success("✅ Data berhasil dihapus.")
 
-            st.rerun()
+        st.rerun()
 
-        else:
-
-            st.warning(
-                "Silakan centang konfirmasi terlebih dahulu."
-            )
-
-else:
-
-    st.info(
-        "Belum ada data yang dapat dihapus."
-    )
+# =====================================================
+# EDIT DATA
+# =====================================================
 
 st.divider()
+st.subheader("✏️ Edit Data")
 
-# =====================================================
-# INFORMASI
-# =====================================================
+if not df.empty:
 
-st.info(
-    """
-### 📌 Informasi
+    id_edit = st.selectbox(
+        "Pilih ID yang akan diedit",
+        df["id"].tolist(),
+        key="edit_data"
+    )
 
-Halaman ini mendukung fitur:
+    from utils.database import (
+        get_data_by_id,
+        update_data
+    )
 
-- ➕ Tambah data transaksi
-- 📤 Import dataset CSV
-- 🔍 Pencarian data
-- ✏️ Edit data transaksi
-- 🗑️ Hapus data transaksi
-- 💾 Penyimpanan otomatis ke database SQLite
-"""
-)
+    row = get_data_by_id(id_edit)
+
+    if row:
+
+        with st.form("form_edit"):
+
+            no = st.number_input(
+                "No",
+                value=int(row["no"])
+            )
+
+            username = st.text_input(
+                "Username",
+                value=row["username"]
+            )
+
+            menu = st.text_input(
+                "Menu yang Dibeli",
+                value=row["menu_yang_dibeli"]
+            )
+
+            total = st.number_input(
+                "Total Harga",
+                value=float(row["Total_harga"])
+            )
+
+            harga = st.number_input(
+                "Harga per Menu",
+                value=float(row["harga_per_menu"])
+            )
+
+            jumlah = st.number_input(
+                "Jumlah Pesanan",
+                value=int(row["Jumlah_pesanan"])
+            )
+
+            rata = st.number_input(
+                "Rata-rata Harga",
+                value=float(row["rata_rata_harga"])
+            )
+
+            prep1 = st.number_input(
+                "Waktu Persiapan Diberikan",
+                value=float(row["waktu_persiapan_yang_diberikan"])
+            )
+
+            prep2 = st.number_input(
+                "Waktu Persiapan Digunakan",
+                value=float(row["waktu_persiapan_digunakan"])
+            )
+
+            waktu = st.text_input(
+                "Waktu Pesan",
+                value=row["waktu_pesan"]
+            )
+
+            simpan = st.form_submit_button(
+                "💾 Simpan Perubahan"
+            )
+
+            if simpan:
+
+                update_data(
+                    id_value=id_edit,
+                    no=no,
+                    username=username,
+                    menu_yang_dibeli=menu,
+                    Total_harga=total,
+                    harga_per_menu=harga,
+                    Jumlah_pesanan=jumlah,
+                    rata_rata_harga=rata,
+                    waktu_persiapan_yang_diberikan=prep1,
+                    waktu_persiapan_digunakan=prep2,
+                    waktu_pesan=waktu
+                )
+
+                st.success("✅ Data berhasil diperbarui.")
+
+                st.rerun()
 
