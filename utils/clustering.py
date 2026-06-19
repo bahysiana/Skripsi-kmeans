@@ -2,14 +2,13 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
-
 # ==========================================================
 # ELBOW METHOD
 # ==========================================================
 
 def elbow_method(X_scaled, max_k=10):
 
-    hasil = []
+    wcss = []
 
     max_cluster = min(max_k, len(X_scaled))
 
@@ -23,12 +22,12 @@ def elbow_method(X_scaled, max_k=10):
 
         model.fit(X_scaled)
 
-        hasil.append({
-            "K": k,
-            "WCSS": model.inertia_
-        })
+        wcss.append(model.inertia_)
 
-    return pd.DataFrame(hasil)
+    return pd.DataFrame({
+        "K": list(range(2, max_cluster + 1)),
+        "WCSS": wcss
+    })
 
 
 # ==========================================================
@@ -45,12 +44,12 @@ def run_kmeans(X_scaled):
 
     labels = model.fit_predict(X_scaled)
 
-    centroid = pd.DataFrame(
+    centroids = pd.DataFrame(
         model.cluster_centers_,
         columns=X_scaled.columns
     )
 
-    return model, labels, centroid
+    return model, labels, centroids
 
 
 # ==========================================================
@@ -59,7 +58,7 @@ def run_kmeans(X_scaled):
 
 def calculate_silhouette(X_scaled, labels):
 
-    if len(set(labels)) < 2:
+    if len(set(labels)) <= 1:
         return 0.0
 
     return float(
@@ -71,7 +70,7 @@ def calculate_silhouette(X_scaled, labels):
 
 
 # ==========================================================
-# TAMBAH CLUSTER KE DATA ASLI
+# MENAMBAHKAN CLUSTER KE DATA
 # ==========================================================
 
 def add_cluster_result(df, labels):
@@ -84,37 +83,16 @@ def add_cluster_result(df, labels):
 
 
 # ==========================================================
-# INTERPRETASI CLUSTER
-# ==========================================================
-
-def add_interpretation(df):
-
-    mapping = {
-        0: "Cluster 1",
-        1: "Cluster 2",
-        2: "Cluster 3"
-    }
-
-    hasil = df.copy()
-
-    hasil["Interpretasi"] = (
-        hasil["cluster"]
-        .map(mapping)
-    )
-
-    return hasil
-
-
-# ==========================================================
 # RINGKASAN CLUSTER
 # ==========================================================
 
 def cluster_summary(df):
 
     return (
-        df.groupby("Interpretasi")
+        df.groupby("cluster")
         .size()
         .reset_index(name="Jumlah Data")
+        .sort_values("cluster")
     )
 
 
@@ -125,8 +103,7 @@ def cluster_summary(df):
 def cluster_statistics(df):
 
     return (
-        df.groupby("cluster")
-        [
+        df.groupby("cluster")[
             [
                 "Total_harga",
                 "Jumlah_pesanan",
@@ -139,3 +116,23 @@ def cluster_statistics(df):
         .round(2)
         .reset_index()
     )
+
+
+# ==========================================================
+# LABEL CLUSTER
+# ==========================================================
+
+def add_cluster_label(df):
+
+    mapping = {
+        0: "Cluster 1",
+        1: "Cluster 2",
+        2: "Cluster 3"
+    }
+
+    hasil = df.copy()
+
+    hasil["Label"] = hasil["cluster"].map(mapping)
+
+    return hasil
+
