@@ -8,17 +8,10 @@ from sklearn.metrics import silhouette_score
 # ==========================================================
 
 def elbow_method(X_scaled, max_k=10):
-    """
-    Mengembalikan DataFrame berisi nilai WCSS
-    untuk K = 2 sampai max_k.
-    """
-
-    if len(X_scaled) < 2:
-        return pd.DataFrame(columns=["K", "WCSS"])
-
-    max_cluster = min(max_k, len(X_scaled))
 
     hasil = []
+
+    max_cluster = min(max_k, len(X_scaled))
 
     for k in range(2, max_cluster + 1):
 
@@ -39,7 +32,7 @@ def elbow_method(X_scaled, max_k=10):
 
 
 # ==========================================================
-# MENJALANKAN K-MEANS
+# K-MEANS (K = 3)
 # ==========================================================
 
 def run_kmeans(X_scaled):
@@ -78,7 +71,7 @@ def calculate_silhouette(X_scaled, labels):
 
 
 # ==========================================================
-# MENAMBAHKAN LABEL CLUSTER
+# TAMBAH CLUSTER KE DATA ASLI
 # ==========================================================
 
 def add_cluster_result(df, labels):
@@ -91,22 +84,15 @@ def add_cluster_result(df, labels):
 
 
 # ==========================================================
-# INTERPRETASI CLUSTER DINAMIS
+# INTERPRETASI CLUSTER
 # ==========================================================
 
-def add_interpretation(df, centroid):
-
-    urutan = (
-        centroid["Total_harga"]
-        .sort_values()
-        .index
-        .tolist()
-    )
+def add_interpretation(df):
 
     mapping = {
-        urutan[0]: "Pola Pemesanan Personal",
-        urutan[1]: "Pola Pemesanan Reguler",
-        urutan[2]: "Pola Pemesanan Kelompok"
+        0: "Cluster 1",
+        1: "Cluster 2",
+        2: "Cluster 3"
     }
 
     hasil = df.copy()
@@ -125,23 +111,22 @@ def add_interpretation(df, centroid):
 
 def cluster_summary(df):
 
-    summary = (
+    return (
         df.groupby("Interpretasi")
         .size()
         .reset_index(name="Jumlah Data")
     )
 
-    return summary
-
 
 # ==========================================================
-# RATA-RATA SETIAP CLUSTER
+# STATISTIK CLUSTER
 # ==========================================================
 
 def cluster_statistics(df):
 
-    hasil = (
-        df.groupby("Interpretasi")[
+    return (
+        df.groupby("cluster")
+        [
             [
                 "Total_harga",
                 "Jumlah_pesanan",
@@ -154,6 +139,3 @@ def cluster_statistics(df):
         .round(2)
         .reset_index()
     )
-
-    return hasil
-
