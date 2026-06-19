@@ -9,8 +9,10 @@ st.set_page_config(
 
 st.title("📈 Hasil Clustering")
 
+st.markdown("---")
+
 # ==========================================================
-# CEK HASIL
+# VALIDASI
 # ==========================================================
 
 if "hasil_cluster" not in st.session_state:
@@ -28,91 +30,74 @@ statistik = st.session_state["cluster_statistics"]
 silhouette = st.session_state["silhouette"]
 
 # ==========================================================
-# SILHOUETTE SCORE
+# KPI
 # ==========================================================
 
-st.subheader("Silhouette Score")
+c1, c2, c3 = st.columns(3)
 
-st.metric(
-    label="Nilai Silhouette",
-    value=round(silhouette, 4)
-)
+with c1:
 
-st.divider()
+    st.metric(
+        "Jumlah Cluster",
+        "3"
+    )
 
-# ==========================================================
-# JUMLAH DATA PER CLUSTER
-# ==========================================================
+with c2:
 
-st.subheader("Jumlah Data Setiap Cluster")
+    st.metric(
+        "Silhouette Score",
+        round(silhouette, 4)
+    )
 
-st.dataframe(
-    summary,
-    use_container_width=True,
-    hide_index=True
-)
+with c3:
 
-# ==========================================================
-# PIE CHART
-# ==========================================================
+    st.metric(
+        "Jumlah Data",
+        len(hasil)
+    )
 
-fig_pie = px.pie(
-    summary,
-    names="cluster",
-    values="Jumlah Data",
-    hole=0.45,
-    title="Distribusi Cluster"
-)
-
-st.plotly_chart(
-    fig_pie,
-    use_container_width=True
-)
-
-st.divider()
+st.markdown("---")
 
 # ==========================================================
-# CENTROID
+# DISTRIBUSI CLUSTER
 # ==========================================================
 
-st.subheader("Nilai Centroid")
+left, right = st.columns(2)
 
-st.dataframe(
-    centroid,
-    use_container_width=True,
-    hide_index=True
-)
+with left:
 
-st.divider()
+    fig_pie = px.pie(
+        summary,
+        names="cluster",
+        values="Jumlah Data",
+        hole=0.45,
+        title="Distribusi Cluster"
+    )
 
-# ==========================================================
-# STATISTIK CLUSTER
-# ==========================================================
+    st.plotly_chart(
+        fig_pie,
+        use_container_width=True
+    )
 
-st.subheader("Rata-rata Tiap Cluster")
+with right:
 
-st.dataframe(
-    statistik,
-    use_container_width=True,
-    hide_index=True
-)
+    fig_bar = px.bar(
+        summary,
+        x="cluster",
+        y="Jumlah Data",
+        text="Jumlah Data",
+        title="Jumlah Anggota Tiap Cluster"
+    )
 
-st.divider()
+    st.plotly_chart(
+        fig_bar,
+        use_container_width=True
+    )
 
-# ==========================================================
-# HASIL AKHIR
-# ==========================================================
-
-st.subheader("Dataset Hasil Clustering")
-
-st.dataframe(
-    hasil,
-    use_container_width=True,
-    hide_index=True
-)
+st.markdown("---")
 
 # ==========================================================
-# SCATTER PLOT
+# VISUALISASI CLUSTER
 # ==========================================================
 
 fig_scatter = px.scatter(
@@ -120,8 +105,9 @@ fig_scatter = px.scatter(
     x="Jumlah_pesanan",
     y="Total_harga",
     color="Label",
-    hover_data=["username"],
-    title="Visualisasi Hasil Clustering"
+    hover_name="username",
+    size="rata_rata_harga",
+    title="Visualisasi Cluster"
 )
 
 st.plotly_chart(
@@ -129,7 +115,49 @@ st.plotly_chart(
     use_container_width=True
 )
 
-st.divider()
+st.markdown("---")
+
+# ==========================================================
+# CENTROID
+# ==========================================================
+
+st.subheader("📍 Nilai Centroid")
+
+st.dataframe(
+    centroid,
+    use_container_width=True,
+    hide_index=True
+)
+
+st.markdown("---")
+
+# ==========================================================
+# STATISTIK
+# ==========================================================
+
+st.subheader("📊 Statistik Cluster")
+
+st.dataframe(
+    statistik,
+    use_container_width=True,
+    hide_index=True
+)
+
+st.markdown("---")
+
+# ==========================================================
+# HASIL AKHIR
+# ==========================================================
+
+st.subheader("📄 Dataset Hasil Clustering")
+
+st.dataframe(
+    hasil,
+    use_container_width=True,
+    hide_index=True
+)
+
+st.markdown("---")
 
 # ==========================================================
 # DOWNLOAD
@@ -140,7 +168,7 @@ csv = hasil.to_csv(
 ).encode("utf-8")
 
 st.download_button(
-    label="📥 Download Hasil Clustering",
+    label="⬇️ Download Hasil Clustering",
     data=csv,
     file_name="hasil_clustering.csv",
     mime="text/csv",
