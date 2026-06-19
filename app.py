@@ -1,90 +1,116 @@
 import streamlit as st
-from pathlib import Path
-from utils.database import create_table
-
-# =====================================================
-# KONFIGURASI HALAMAN
-# =====================================================
 
 st.set_page_config(
-    page_title="Analisis Pola Transaksi Shopee Food",
+    page_title="Analisis K-Means Shopee Food",
     page_icon="🍽️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# =====================================================
-# MEMBUAT DATABASE OTOMATIS
-# =====================================================
+# ==========================================================
+# SIDEBAR
+# ==========================================================
 
-create_table()
+st.sidebar.title("🍽️ Shopee Food Analytics")
 
-# =====================================================
-# LOAD CSS
-# =====================================================
+st.sidebar.markdown("---")
 
-css_file = Path("assets/style.css")
+st.sidebar.info(
+    """
+    Sistem Analisis Pola Transaksi
+    Menggunakan Metode
+    K-Means Clustering
+    """
+)
 
-if css_file.exists():
-    with open(css_file, "r", encoding="utf-8") as f:
-        st.markdown(
-            f"<style>{f.read()}</style>",
-            unsafe_allow_html=True
-        )
+st.sidebar.markdown("---")
 
-# =====================================================
-# HEADER
-# =====================================================
+st.sidebar.success(
+    """
+    📌 Menu tersedia:
+
+    • Dashboard
+
+    • Kelola Data
+
+    • Preprocessing
+
+    • K-Means
+
+    • Hasil
+
+    • Download
+
+    • Tentang
+    """
+)
+
+st.sidebar.markdown("---")
+
+st.sidebar.caption(
+    "Universitas Putra Indonesia YPTK Padang"
+)
+
+# ==========================================================
+# HALAMAN UTAMA
+# ==========================================================
 
 st.title("🍽️ Analisis Pola Transaksi Shopee Food")
 
-st.markdown("""
-### Menggunakan Metode K-Means Clustering
+st.markdown(
+    """
+    Selamat datang pada aplikasi analisis pola transaksi
+    menggunakan algoritma **K-Means Clustering**.
 
-Selamat datang di aplikasi analisis pola transaksi Shopee Food yang dikembangkan
-untuk mendukung penelitian skripsi.
+    Gunakan menu pada sidebar untuk berpindah halaman.
+    """
+)
 
-Gunakan menu pada **sidebar sebelah kiri** untuk mengakses fitur-fitur aplikasi.
-""")
-
-st.divider()
-
-# =====================================================
-# FITUR
-# =====================================================
+st.markdown("---")
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.info("""
-**📂 Kelola Data**
-
-- Tambah data
-- Edit data
-- Hapus data
-- Import CSV
-""")
+    st.metric(
+        "Metode",
+        "K-Means"
+    )
 
 with col2:
-    st.success("""
-**🤖 K-Means Clustering**
-
-- StandardScaler
-- K = 3
-- Analisis cluster
-""")
+    st.metric(
+        "Jumlah Cluster",
+        "3"
+    )
 
 with col3:
-    st.warning("""
-**📊 Hasil Analisis**
+    st.metric(
+        "Normalisasi",
+        "StandardScaler"
+    )
 
-- Dashboard
-- Visualisasi
-- Download CSV
-""")
+st.markdown("---")
 
-st.divider()
+st.subheader("Alur Penggunaan")
 
-st.caption(
-    "© 2026 | Analisis Pola Transaksi Shopee Food Menggunakan Metode K-Means Clustering"
+st.markdown(
+    """
+    1. Buka **Kelola Data** dan import dataset CSV.
+    2. Jalankan **Preprocessing** untuk membersihkan dan melakukan normalisasi data.
+    3. Masuk ke halaman **K-Means** untuk menjalankan proses clustering.
+    4. Lihat hasil analisis pada halaman **Hasil**.
+    5. Unduh hasil melalui halaman **Download**.
+    """
 )
+
+st.markdown("---")
+
+st.info(
+    """
+    Aplikasi ini menggunakan:
+    - StandardScaler
+    - Elbow Method
+    - Silhouette Score
+    - K-Means Clustering (K = 3)
+    """
+)
+
