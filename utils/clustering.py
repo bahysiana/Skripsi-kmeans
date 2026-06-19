@@ -1,72 +1,92 @@
+```python
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
 
-# =====================================================
-# MENJALANKAN K-MEANS
-# =====================================================
+# ==========================================================
+# ELBOW METHOD
+# ==========================================================
 
-def run_kmeans(scaled_df, n_clusters=3):
-    """
-    Menjalankan K-Means Clustering.
-    """
+def elbow_method(data_scaled, max_k=10):
+
+    wcss = []
+
+    for k in range(2, max_k + 1):
+
+        model = KMeans(
+            n_clusters=k,
+            random_state=42,
+            n_init=10
+        )
+
+        model.fit(data_scaled)
+
+        wcss.append(model.inertia_)
+
+    hasil = pd.DataFrame({
+        "K": list(range(2, max_k + 1)),
+        "WCSS": wcss
+    })
+
+    return hasil
+
+
+# ==========================================================
+# MENJALANKAN K-MEANS
+# ==========================================================
+
+def run_kmeans(data_scaled):
 
     model = KMeans(
-        n_clusters=n_clusters,
+        n_clusters=3,
         random_state=42,
         n_init=10
     )
 
-    labels = model.fit_predict(scaled_df)
+    labels = model.fit_predict(data_scaled)
 
-    centroids = pd.DataFrame(
+    centroid = pd.DataFrame(
         model.cluster_centers_,
-        columns=scaled_df.columns
+        columns=data_scaled.columns
     )
 
-    return model, labels, centroids
+    return model, labels, centroid
 
 
-# =====================================================
+# ==========================================================
 # SILHOUETTE SCORE
-# =====================================================
+# ==========================================================
 
-def get_silhouette_score(scaled_df, labels):
-    """
-    Menghitung Silhouette Score.
-    """
+def calculate_silhouette(data_scaled, labels):
 
-    if len(set(labels)) <= 1:
-        return 0
+    if len(set(labels)) < 2:
+        return 0.0
 
     return silhouette_score(
-        scaled_df,
+        data_scaled,
         labels
     )
 
 
-# =====================================================
+# ==========================================================
 # MENAMBAHKAN LABEL CLUSTER
-# =====================================================
+# ==========================================================
 
-def add_cluster(df_original, labels):
-    """
-    Menambahkan hasil cluster ke DataFrame asli.
-    """
+def add_cluster_result(df, labels):
 
-    hasil = df_original.copy()
+    hasil = df.copy()
 
     hasil["cluster"] = labels
 
     return hasil
 
 
-# =====================================================
+# ==========================================================
 # INTERPRETASI CLUSTER
-# =====================================================
+# ==========================================================
 
-def add_cluster_interpretation(df):
+def add_interpretation(df):
 
     mapping = {
         0: "Pola Pemesanan Personal",
@@ -76,23 +96,22 @@ def add_cluster_interpretation(df):
 
     hasil = df.copy()
 
-    hasil["interpretasi_cluster"] = (
-        hasil["cluster"].map(mapping)
-    )
+    hasil["Interpretasi"] = hasil["cluster"].map(mapping)
 
     return hasil
 
 
-# =====================================================
+# ==========================================================
 # RINGKASAN CLUSTER
-# =====================================================
+# ==========================================================
 
 def cluster_summary(df):
 
     summary = (
-        df.groupby("interpretasi_cluster")
+        df.groupby("Interpretasi")
         .size()
         .reset_index(name="Jumlah Data")
     )
 
     return summary
+```
