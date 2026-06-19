@@ -10,49 +10,66 @@ st.title("ℹ️ Tentang Aplikasi")
 
 st.markdown("---")
 
-st.header("Deskripsi")
+st.markdown(
+    """
+    ## 🍽️ Analisis Pola Transaksi Shopee Food
+
+    Aplikasi ini dikembangkan untuk membantu melakukan analisis
+    pola transaksi menggunakan algoritma **K-Means Clustering**
+    berdasarkan data pemesanan pada **Buffet The Padang Pasir**.
+
+    Sistem dibangun menggunakan **Python**, **Streamlit**,
+    **SQLite**, dan **Scikit-Learn**.
+    """
+)
+
+st.markdown("---")
+
+st.subheader("🎯 Tujuan")
 
 st.write("""
-Aplikasi ini dibuat untuk melakukan analisis pola transaksi Shopee Food
-menggunakan metode K-Means Clustering berdasarkan data pemesanan
-pada Toko Buffet The Padang Pasir.
+Mengelompokkan pola transaksi pelanggan sehingga dapat membantu
+pemilik usaha dalam memahami karakteristik pemesanan dan
+mendukung pengambilan keputusan berbasis data.
 """)
 
 st.markdown("---")
 
-st.header("Fitur Aplikasi")
+st.subheader("⚙️ Teknologi")
+
+col1, col2 = st.columns(2)
+
+with col1:
+
+    st.success("🐍 Python")
+
+    st.success("📊 Streamlit")
+
+    st.success("🗄️ SQLite")
+
+with col2:
+
+    st.success("🤖 Scikit-Learn")
+
+    st.success("📈 Plotly")
+
+    st.success("🐼 Pandas")
+
+st.markdown("---")
+
+st.subheader("🧠 Metode")
 
 st.markdown("""
-- Dashboard Ringkasan Data
-- Kelola Data (CRUD)
-- Import Dataset CSV
-- Preprocessing Data
+- Data Cleaning
 - StandardScaler
 - Elbow Method
 - Silhouette Score
 - K-Means Clustering (K = 3)
-- Visualisasi Hasil Clustering
-- Download Hasil Analisis
 """)
 
 st.markdown("---")
 
-st.header("Metode")
-
-st.markdown("""
-Metode yang digunakan pada aplikasi ini:
-
-1. Data Cleaning
-2. StandardScaler
-3. Elbow Method
-4. Silhouette Score
-5. K-Means Clustering
-6. Visualisasi Hasil Cluster
-""")
-
-st.markdown("---")
-
-st.header("Variabel Clustering")
+st.subheader("📌 Variabel yang Digunakan")
 
 st.table({
     "Variabel": [
@@ -66,16 +83,16 @@ st.table({
 
 st.markdown("---")
 
-st.header("Informasi")
+st.subheader("👨‍🎓 Informasi Penelitian")
 
 st.info("""
-Program ini dikembangkan sebagai implementasi penelitian
-Analisis Pola Transaksi Shopee Food Menggunakan Metode
-K-Means Clustering Berdasarkan Data Pemesanan
+Analisis Pola Transaksi Shopee Food
+Menggunakan Metode K-Means Clustering
+Berdasarkan Data Pemesanan
 Pada Toko Buffet The Padang Pasir.
 """)
 
 st.markdown("---")
 
-st.caption("© 2026 - Sistem Analisis K-Means Shopee Food")
+st.caption("© 2026 | Sistem Analisis K-Means Clustering")
 
