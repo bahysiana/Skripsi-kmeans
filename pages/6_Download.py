@@ -2,14 +2,16 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Download",
-    page_icon="📥",
+    page_icon="⬇️",
     layout="wide"
 )
 
-st.title("📥 Download Hasil")
+st.title("⬇️ Download Hasil")
+
+st.markdown("---")
 
 # ==========================================================
-# HASIL CLUSTERING
+# VALIDASI
 # ==========================================================
 
 if "hasil_cluster" not in st.session_state:
@@ -20,16 +22,32 @@ if "hasil_cluster" not in st.session_state:
 
     st.stop()
 
+# ==========================================================
+# DATA
+# ==========================================================
+
 hasil = st.session_state["hasil_cluster"]
+
+scaled = st.session_state.get("scaled_df", None)
+
+centroid = st.session_state.get("centroid", None)
+
+summary = st.session_state.get("summary_cluster", None)
+
+statistik = st.session_state.get("cluster_statistics", None)
+
+# ==========================================================
+# HASIL CLUSTERING
+# ==========================================================
+
+st.subheader("📄 Dataset Hasil Clustering")
 
 csv_hasil = hasil.to_csv(
     index=False
 ).encode("utf-8")
 
-st.subheader("Download Dataset Hasil Clustering")
-
 st.download_button(
-    label="📄 Download CSV Hasil Clustering",
+    label="Download Hasil Clustering",
     data=csv_hasil,
     file_name="hasil_clustering.csv",
     mime="text/csv",
@@ -40,18 +58,16 @@ st.download_button(
 # HASIL PREPROCESSING
 # ==========================================================
 
-if "scaled_df" in st.session_state:
+if scaled is not None:
 
-    scaled = st.session_state["scaled_df"]
+    st.subheader("🧹 Hasil Preprocessing")
 
     csv_scaled = scaled.to_csv(
         index=False
     ).encode("utf-8")
 
-    st.subheader("Download Hasil Preprocessing")
-
     st.download_button(
-        label="📄 Download CSV Preprocessing",
+        label="Download Hasil Preprocessing",
         data=csv_scaled,
         file_name="hasil_preprocessing.csv",
         mime="text/csv",
@@ -62,42 +78,18 @@ if "scaled_df" in st.session_state:
 # CENTROID
 # ==========================================================
 
-if "centroid" in st.session_state:
+if centroid is not None:
 
-    centroid = st.session_state["centroid"]
+    st.subheader("📍 Data Centroid")
 
     csv_centroid = centroid.to_csv(
         index=False
     ).encode("utf-8")
 
-    st.subheader("Download Data Centroid")
-
     st.download_button(
-        label="📄 Download CSV Centroid",
+        label="Download Centroid",
         data=csv_centroid,
         file_name="centroid.csv",
-        mime="text/csv",
-        use_container_width=True
-    )
-
-# ==========================================================
-# STATISTIK CLUSTER
-# ==========================================================
-
-if "cluster_statistics" in st.session_state:
-
-    statistik = st.session_state["cluster_statistics"]
-
-    csv_statistik = statistik.to_csv(
-        index=False
-    ).encode("utf-8")
-
-    st.subheader("Download Statistik Cluster")
-
-    st.download_button(
-        label="📄 Download CSV Statistik Cluster",
-        data=csv_statistik,
-        file_name="statistik_cluster.csv",
         mime="text/csv",
         use_container_width=True
     )
@@ -106,21 +98,44 @@ if "cluster_statistics" in st.session_state:
 # RINGKASAN CLUSTER
 # ==========================================================
 
-if "summary_cluster" in st.session_state:
+if summary is not None:
 
-    summary = st.session_state["summary_cluster"]
+    st.subheader("📊 Ringkasan Cluster")
 
     csv_summary = summary.to_csv(
         index=False
     ).encode("utf-8")
 
-    st.subheader("Download Ringkasan Cluster")
-
     st.download_button(
-        label="📄 Download CSV Ringkasan Cluster",
+        label="Download Ringkasan Cluster",
         data=csv_summary,
         file_name="ringkasan_cluster.csv",
         mime="text/csv",
         use_container_width=True
     )
 
+# ==========================================================
+# STATISTIK CLUSTER
+# ==========================================================
+
+if statistik is not None:
+
+    st.subheader("📈 Statistik Cluster")
+
+    csv_stat = statistik.to_csv(
+        index=False
+    ).encode("utf-8")
+
+    st.download_button(
+        label="Download Statistik Cluster",
+        data=csv_stat,
+        file_name="statistik_cluster.csv",
+        mime="text/csv",
+        use_container_width=True
+    )
+
+st.markdown("---")
+
+st.success(
+    "Seluruh hasil analisis dapat diunduh dalam format CSV."
+)
