@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import plotly.express as px
 
@@ -7,55 +6,46 @@ from utils.clustering import (
     run_kmeans,
     calculate_silhouette,
     add_cluster_result,
-    add_interpretation,
-    cluster_summary
+    add_cluster_label,
+    cluster_summary,
+    cluster_statistics
 )
-
-# =====================================================
-# KONFIGURASI HALAMAN
-# =====================================================
 
 st.set_page_config(
     page_title="K-Means Clustering",
-    page_icon="🤖",
+    page_icon="🎯",
     layout="wide"
 )
 
-st.title("🤖 K-Means Clustering")
+st.title("🎯 K-Means Clustering")
 
-st.caption(
-    "Analisis pola transaksi menggunakan Elbow Method, Silhouette Score, dan K-Means Clustering."
-)
-
-st.divider()
-
-# =====================================================
+# ==========================================================
 # CEK PREPROCESSING
-# =====================================================
+# ==========================================================
 
-if "scaled_data" not in st.session_state:
+if "scaled_df" not in st.session_state:
 
     st.warning(
-        "Silakan jalankan preprocessing terlebih dahulu."
+        "Silakan jalankan halaman Preprocessing terlebih dahulu."
     )
 
     st.stop()
 
-scaled_df = st.session_state["scaled_data"]
-original_df = st.session_state["original_data"]
+scaled_df = st.session_state["scaled_df"]
+original_df = st.session_state["original_df"]
 
-# =====================================================
+# ==========================================================
 # ELBOW METHOD
-# =====================================================
+# ==========================================================
 
-st.subheader("📈 Elbow Method")
+st.subheader("Elbow Method")
 
 elbow_df = elbow_method(
     scaled_df,
     max_k=10
 )
 
-fig = px.line(
+fig_elbow = px.line(
     elbow_df,
     x="K",
     y="WCSS",
@@ -64,22 +54,18 @@ fig = px.line(
 )
 
 st.plotly_chart(
-    fig,
+    fig_elbow,
     use_container_width=True
-)
-
-st.info(
-    "Pada penelitian ini dipilih nilai K = 3 berdasarkan hasil analisis Elbow Method."
 )
 
 st.divider()
 
-# =====================================================
+# ==========================================================
 # PROSES K-MEANS
-# =====================================================
+# ==========================================================
 
 if st.button(
-    "🚀 Jalankan K-Means (K = 3)",
+    "Jalankan K-Means (K = 3)",
     use_container_width=True
 ):
 
@@ -97,7 +83,7 @@ if st.button(
         labels
     )
 
-    hasil = add_interpretation(
+    hasil = add_cluster_label(
         hasil
     )
 
@@ -105,25 +91,26 @@ if st.button(
         hasil
     )
 
+    statistik = cluster_statistics(
+        hasil
+    )
+
     st.session_state["hasil_cluster"] = hasil
     st.session_state["centroid"] = centroid
     st.session_state["summary_cluster"] = summary
+    st.session_state["cluster_statistics"] = statistik
     st.session_state["silhouette"] = silhouette
 
-    st.success(
-        "✅ Proses clustering berhasil."
-    )
-
-# =====================================================
-# HASIL
-# =====================================================
+# ==========================================================
+# TAMPILKAN HASIL
+# ==========================================================
 
 if "hasil_cluster" in st.session_state:
 
-    st.subheader("📊 Silhouette Score")
+    st.subheader("Silhouette Score")
 
     st.metric(
-        "Nilai Silhouette Score",
+        "Nilai",
         round(
             st.session_state["silhouette"],
             4
@@ -132,7 +119,7 @@ if "hasil_cluster" in st.session_state:
 
     st.divider()
 
-    st.subheader("📍 Centroid")
+    st.subheader("Centroid")
 
     st.dataframe(
         st.session_state["centroid"],
@@ -142,7 +129,33 @@ if "hasil_cluster" in st.session_state:
 
     st.divider()
 
-    st.subheader("📋 Hasil Clustering")
+    st.subheader("Statistik Cluster")
+
+    st.dataframe(
+        st.session_state["cluster_statistics"],
+        use_container_width=True,
+        hide_index=True
+    )
+
+    st.divider()
+
+    st.subheader("Distribusi Cluster")
+
+    fig_pie = px.pie(
+        st.session_state["summary_cluster"],
+        names="cluster",
+        values="Jumlah Data",
+        hole=0.5
+    )
+
+    st.plotly_chart(
+        fig_pie,
+        use_container_width=True
+    )
+
+    st.divider()
+
+    st.subheader("Hasil Clustering")
 
     st.dataframe(
         st.session_state["hasil_cluster"],
@@ -150,19 +163,17 @@ if "hasil_cluster" in st.session_state:
         hide_index=True
     )
 
-    st.divider()
-
-    st.subheader("📈 Distribusi Cluster")
-
-    pie = px.pie(
-        st.session_state["summary_cluster"],
-        names="Interpretasi",
-        values="Jumlah Data",
-        hole=0.45
+    csv = (
+        st.session_state["hasil_cluster"]
+        .to_csv(index=False)
+        .encode("utf-8")
     )
 
-    st.plotly_chart(
-        pie,
+    st.download_button(
+        label="Download Hasil Clustering",
+        data=csv,
+        file_name="hasil_kmeans.csv",
+        mime="text/csv",
         use_container_width=True
     )
-```
+
