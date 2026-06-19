@@ -19,7 +19,6 @@ st.set_page_config(
 # =====================================================
 
 st.title("🧹 Preprocessing Data")
-
 st.caption(
     "Melakukan preprocessing menggunakan StandardScaler sebelum proses K-Means Clustering."
 )
@@ -27,7 +26,7 @@ st.caption(
 st.divider()
 
 # =====================================================
-# LOAD DATA
+# AMBIL DATA
 # =====================================================
 
 df = get_all_data()
@@ -35,7 +34,7 @@ df = get_all_data()
 if df.empty:
 
     st.warning(
-        "Database masih kosong. Silakan tambahkan data terlebih dahulu pada menu Kelola Data."
+        "⚠️ Database masih kosong. Silakan tambahkan atau import data terlebih dahulu."
     )
 
     st.stop()
@@ -55,7 +54,7 @@ st.dataframe(
 st.divider()
 
 # =====================================================
-# TOMBOL PREPROCESSING
+# PROSES PREPROCESSING
 # =====================================================
 
 if st.button(
@@ -63,17 +62,18 @@ if st.button(
     use_container_width=True
 ):
 
-    hasil_scaled, scaler = preprocess_data(df)
+    scaled_df, scaler = preprocess_data(df)
 
-    st.session_state["scaled_data"] = hasil_scaled
+    st.session_state["scaled_data"] = scaled_df
     st.session_state["original_data"] = df
+    st.session_state["scaler"] = scaler
 
     st.success(
         "✅ Preprocessing berhasil dilakukan."
     )
 
 # =====================================================
-# HASIL
+# HASIL PREPROCESSING
 # =====================================================
 
 if "scaled_data" in st.session_state:
@@ -99,3 +99,14 @@ if "scaled_data" in st.session_state:
         mime="text/csv",
         use_container_width=True
     )
+
+st.divider()
+
+st.info(
+    """
+    Tahap preprocessing melakukan normalisasi data menggunakan
+    **StandardScaler** sehingga setiap variabel berada pada skala
+    yang sebanding sebelum diproses menggunakan algoritma
+    **K-Means Clustering**.
+    """
+)
