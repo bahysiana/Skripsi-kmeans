@@ -13,15 +13,15 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("📊 Dashboard Analisis Shopee Food")
+st.title("📊 Dashboard Analisis Pola Transaksi Shopee Food")
 st.caption(
-    "Analisis Pola Transaksi Menggunakan Metode K-Means Clustering"
+    "Analisis Menggunakan Metode K-Means Clustering"
 )
 
 st.divider()
 
 # ==========================================================
-# AMBIL DATA
+# LOAD DATA
 # ==========================================================
 
 df = get_all_data()
@@ -29,7 +29,7 @@ df = get_all_data()
 if df.empty:
 
     st.warning(
-        "Database masih kosong. Silakan import data terlebih dahulu."
+        "Belum ada data. Silakan import data pada menu Kelola Data."
     )
 
     st.stop()
@@ -71,12 +71,10 @@ col4.metric(
 st.divider()
 
 # ==========================================================
-# GRAFIK TOTAL HARGA
+# HISTOGRAM TOTAL HARGA
 # ==========================================================
 
-st.subheader("📈 Distribusi Total Harga")
-
-fig = px.histogram(
+fig_total = px.histogram(
     df,
     x="Total_harga",
     nbins=20,
@@ -84,17 +82,15 @@ fig = px.histogram(
 )
 
 st.plotly_chart(
-    fig,
+    fig_total,
     use_container_width=True
 )
 
 # ==========================================================
-# GRAFIK JUMLAH PESANAN
+# HISTOGRAM JUMLAH PESANAN
 # ==========================================================
 
-st.subheader("📦 Distribusi Jumlah Pesanan")
-
-fig2 = px.histogram(
+fig_jumlah = px.histogram(
     df,
     x="Jumlah_pesanan",
     nbins=15,
@@ -102,7 +98,24 @@ fig2 = px.histogram(
 )
 
 st.plotly_chart(
-    fig2,
+    fig_jumlah,
+    use_container_width=True
+)
+
+# ==========================================================
+# SCATTER PLOT
+# ==========================================================
+
+fig_scatter = px.scatter(
+    df,
+    x="Jumlah_pesanan",
+    y="Total_harga",
+    hover_data=["username"],
+    title="Jumlah Pesanan vs Total Harga"
+)
+
+st.plotly_chart(
+    fig_scatter,
     use_container_width=True
 )
 
@@ -110,23 +123,11 @@ st.plotly_chart(
 # PREVIEW DATA
 # ==========================================================
 
-st.subheader("📋 Preview Dataset")
+st.subheader("Preview Dataset")
 
 st.dataframe(
     df.head(20),
     use_container_width=True,
     hide_index=True
-)
-
-# ==========================================================
-# INFORMASI
-# ==========================================================
-
-st.info(
-    """
-    Dashboard ini menampilkan ringkasan data transaksi Shopee Food.
-    Untuk menjalankan analisis K-Means, silakan lanjut ke halaman
-    **Preprocessing** kemudian **K-Means**.
-    """
 )
 
