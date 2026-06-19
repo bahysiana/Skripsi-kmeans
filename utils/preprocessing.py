@@ -2,42 +2,42 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 
-# =====================================================
-# MEMBERSIHKAN NILAI NUMERIK
-# =====================================================
+# ==========================================================
+# MEMBERSIHKAN KOLOM MENIT
+# ==========================================================
 
 def clean_minutes(value):
-    """
-    Mengubah:
-    '13 menit' -> 13
-    '8 menit' -> 8
-    15 -> 15
-    """
 
     if pd.isna(value):
         return 0
 
-    text = str(value).lower()
+    value = str(value)
 
-    text = text.replace("menit", "")
+    value = value.replace("menit", "")
 
-    text = text.strip()
+    value = value.replace("Menit", "")
+
+    value = value.strip()
 
     try:
-        return float(text)
+
+        return float(value)
+
     except:
-        return 0.0
+
+        return 0
 
 
-# =====================================================
-# PREPROCESSING
-# =====================================================
+# ==========================================================
+# PREPROCESSING DATA
+# ==========================================================
 
 def preprocess_data(df):
 
     data = df.copy()
 
     # Bersihkan kolom waktu
+
     data["waktu_persiapan_yang_diberikan"] = (
         data["waktu_persiapan_yang_diberikan"]
         .apply(clean_minutes)
@@ -48,8 +48,9 @@ def preprocess_data(df):
         .apply(clean_minutes)
     )
 
-    # Pastikan numerik
-    numeric_columns = [
+    # Kolom numerik yang dipakai K-Means
+
+    fitur = [
 
         "Total_harga",
 
@@ -63,11 +64,16 @@ def preprocess_data(df):
 
     ]
 
-    for col in numeric_columns:
+    # Pastikan numerik
+
+    for col in fitur:
 
         data[col] = pd.to_numeric(
+
             data[col],
+
             errors="coerce"
+
         )
 
         data[col] = data[col].fillna(0)
@@ -76,7 +82,7 @@ def preprocess_data(df):
 
     scaled = scaler.fit_transform(
 
-        data[numeric_columns]
+        data[fitur]
 
     )
 
@@ -84,9 +90,8 @@ def preprocess_data(df):
 
         scaled,
 
-        columns=numeric_columns
+        columns=fitur
 
     )
 
     return scaled_df, scaler
-
