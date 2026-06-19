@@ -3,22 +3,22 @@ from pathlib import Path
 import pandas as pd
 
 # ==========================================================
-# KONFIGURASI DATABASE
+# PATH DATABASE
 # ==========================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATABASE_DIR = BASE_DIR / "database"
-DATABASE_DIR.mkdir(parents=True, exist_ok=True)
+DB_DIR = BASE_DIR / "database"
+DB_DIR.mkdir(parents=True, exist_ok=True)
 
-DATABASE_PATH = DATABASE_DIR / "shopee_food.db"
+DB_PATH = DB_DIR / "shopee_food.db"
 
 
 # ==========================================================
-# KONEKSI DATABASE
+# KONEKSI
 # ==========================================================
 
 def get_connection():
-    conn = sqlite3.connect(DATABASE_PATH)
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -30,9 +30,9 @@ def get_connection():
 def create_table():
 
     conn = get_connection()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    cursor.execute("""
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS transaksi (
 
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,12 +73,15 @@ def get_all_data():
     conn = get_connection()
 
     df = pd.read_sql_query(
+
         """
         SELECT *
         FROM transaksi
         ORDER BY no ASC
         """,
+
         conn
+
     )
 
     conn.close()
@@ -94,16 +97,16 @@ def count_data():
 
     conn = get_connection()
 
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    cursor.execute(
+    cur.execute(
         """
         SELECT COUNT(*)
         FROM transaksi
         """
     )
 
-    total = cursor.fetchone()[0]
+    total = cur.fetchone()[0]
 
     conn.close()
 
@@ -118,18 +121,21 @@ def get_data_by_id(id_value):
 
     conn = get_connection()
 
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    cursor.execute(
+    cur.execute(
+
         """
         SELECT *
         FROM transaksi
         WHERE id = ?
         """,
+
         (id_value,)
+
     )
 
-    row = cursor.fetchone()
+    row = cur.fetchone()
 
     conn.close()
 
@@ -141,6 +147,7 @@ def get_data_by_id(id_value):
 # ==========================================================
 
 def insert_data(
+
     no,
     username,
     menu_yang_dibeli,
@@ -151,112 +158,73 @@ def insert_data(
     waktu_persiapan_yang_diberikan,
     waktu_persiapan_digunakan,
     waktu_pesan
+
 ):
 
     conn = get_connection()
-    cursor = conn.cursor()
 
-    cursor.execute(
+    cur = conn.cursor()
+
+    cur.execute(
+
         """
-        INSERT INTO transaksi
-        (
+        INSERT INTO transaksi(
+
             no,
+
             username,
+
             menu_yang_dibeli,
+
             Total_harga,
+
             harga_per_menu,
+
             Jumlah_pesanan,
+
             rata_rata_harga,
+
             waktu_persiapan_yang_diberikan,
+
             waktu_persiapan_digunakan,
+
             waktu_pesan
+
         )
 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
         """,
+
         (
+
             no,
+
             username,
+
             menu_yang_dibeli,
+
             Total_harga,
+
             harga_per_menu,
+
             Jumlah_pesanan,
+
             rata_rata_harga,
+
             waktu_persiapan_yang_diberikan,
+
             waktu_persiapan_digunakan,
+
             waktu_pesan
+
         )
-    )
 
-    conn.commit()
-    conn.close()
-
-
-# ==========================================================
-# HAPUS SEMUA DATA
-# ==========================================================
-
-def truncate_table():
-
-    conn = get_connection()
-
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "DELETE FROM transaksi"
     )
 
     conn.commit()
 
     conn.close()
-
-
-# ==========================================================
-# IMPORT DATAFRAME
-# ==========================================================
-
-def import_dataframe(df):
-
-    conn = get_connection()
-
-    if "id" in df.columns:
-        df = df.drop(columns=["id"])
-
-    # Bersihkan kolom waktu persiapan
-    for col in [
-        "waktu_persiapan_yang_diberikan",
-        "waktu_persiapan_digunakan"
-    ]:
-
-        if col in df.columns:
-
-            df[col] = (
-                df[col]
-                .astype(str)
-                .str.replace(" menit", "", regex=False)
-                .str.strip()
-            )
-
-            df[col] = pd.to_numeric(
-                df[col],
-                errors="coerce"
-            ).fillna(0)
-
-    df.to_sql(
-        "transaksi",
-        conn,
-        if_exists="append",
-        index=False
-    )
-
-    conn.close()
-
-
-# ==========================================================
-# INISIALISASI
-# ==========================================================
-
-create_table()
 
 # ==========================================================
 # UPDATE DATA
@@ -277,9 +245,9 @@ def update_data(
 ):
 
     conn = get_connection()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    cursor.execute(
+    cur.execute(
         """
         UPDATE transaksi
         SET
@@ -315,15 +283,15 @@ def update_data(
 
 
 # ==========================================================
-# HAPUS DATA
+# HAPUS SATU DATA
 # ==========================================================
 
 def delete_data(id_value):
 
     conn = get_connection()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    cursor.execute(
+    cur.execute(
         """
         DELETE FROM transaksi
         WHERE id = ?
@@ -336,14 +304,90 @@ def delete_data(id_value):
 
 
 # ==========================================================
+# HAPUS SELURUH DATA
+# ==========================================================
+
+def truncate_table():
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("DELETE FROM transaksi")
+
+    conn.commit()
+    conn.close()
+
+
+# ==========================================================
+# IMPORT DATAFRAME
+# ==========================================================
+
+def import_dataframe(df: pd.DataFrame):
+
+    conn = get_connection()
+
+    data = df.copy()
+
+    if "id" in data.columns:
+        data = data.drop(columns=["id"])
+
+    # Bersihkan kolom waktu persiapan
+    for col in [
+        "waktu_persiapan_yang_diberikan",
+        "waktu_persiapan_digunakan"
+    ]:
+
+        if col in data.columns:
+
+            data[col] = (
+                data[col]
+                .astype(str)
+                .str.replace(" menit", "", regex=False)
+                .str.strip()
+            )
+
+            data[col] = pd.to_numeric(
+                data[col],
+                errors="coerce"
+            ).fillna(0)
+
+    # Pastikan numerik
+    numeric_cols = [
+        "no",
+        "Total_harga",
+        "harga_per_menu",
+        "Jumlah_pesanan",
+        "rata_rata_harga"
+    ]
+
+    for col in numeric_cols:
+
+        if col in data.columns:
+
+            data[col] = pd.to_numeric(
+                data[col],
+                errors="coerce"
+            ).fillna(0)
+
+    data.to_sql(
+        "transaksi",
+        conn,
+        if_exists="append",
+        index=False
+    )
+
+    conn.close()
+
+
+# ==========================================================
 # IMPORT CSV
 # ==========================================================
 
-def import_csv(uploaded_file, separator=";"):
+def import_csv(uploaded_file):
 
     df = pd.read_csv(
         uploaded_file,
-        sep=separator
+        sep=";"
     )
 
     import_dataframe(df)
@@ -355,14 +399,14 @@ def import_csv(uploaded_file, separator=";"):
 # GANTI SELURUH DATA
 # ==========================================================
 
-def replace_all_data(df):
+def replace_all_data(df: pd.DataFrame):
 
     truncate_table()
     import_dataframe(df)
 
 
 # ==========================================================
-# EXPORT DATA
+# EXPORT DATAFRAME
 # ==========================================================
 
 def export_dataframe():
@@ -375,4 +419,5 @@ def export_dataframe():
 # ==========================================================
 
 create_table()
+
 
