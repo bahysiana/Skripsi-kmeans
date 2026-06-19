@@ -1,5 +1,4 @@
 import pandas as pd
-
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
@@ -8,9 +7,9 @@ from sklearn.metrics import silhouette_score
 # MENJALANKAN K-MEANS
 # =====================================================
 
-def run_kmeans(data_scaled, n_clusters=3):
+def run_kmeans(scaled_df, n_clusters=3):
     """
-    Menjalankan algoritma K-Means.
+    Menjalankan K-Means Clustering.
     """
 
     model = KMeans(
@@ -19,30 +18,30 @@ def run_kmeans(data_scaled, n_clusters=3):
         n_init=10
     )
 
-    labels = model.fit_predict(data_scaled)
+    labels = model.fit_predict(scaled_df)
 
     centroids = pd.DataFrame(
         model.cluster_centers_,
-        columns=data_scaled.columns
+        columns=scaled_df.columns
     )
 
     return model, labels, centroids
 
 
 # =====================================================
-# MENGHITUNG SILHOUETTE SCORE
+# SILHOUETTE SCORE
 # =====================================================
 
-def calculate_silhouette(data_scaled, labels):
+def get_silhouette_score(scaled_df, labels):
     """
     Menghitung Silhouette Score.
     """
 
-    if len(set(labels)) < 2:
+    if len(set(labels)) <= 1:
         return 0
 
     return silhouette_score(
-        data_scaled,
+        scaled_df,
         labels
     )
 
@@ -51,14 +50,35 @@ def calculate_silhouette(data_scaled, labels):
 # MENAMBAHKAN LABEL CLUSTER
 # =====================================================
 
-def add_cluster_to_dataframe(df, labels):
+def add_cluster(df_original, labels):
     """
-    Menambahkan kolom cluster ke DataFrame.
+    Menambahkan hasil cluster ke DataFrame asli.
     """
+
+    hasil = df_original.copy()
+
+    hasil["cluster"] = labels
+
+    return hasil
+
+
+# =====================================================
+# INTERPRETASI CLUSTER
+# =====================================================
+
+def add_cluster_interpretation(df):
+
+    mapping = {
+        0: "Pola Pemesanan Personal",
+        1: "Pola Pemesanan Reguler",
+        2: "Pola Pemesanan Kelompok"
+    }
 
     hasil = df.copy()
 
-    hasil["Cluster"] = labels
+    hasil["interpretasi_cluster"] = (
+        hasil["cluster"].map(mapping)
+    )
 
     return hasil
 
@@ -67,32 +87,12 @@ def add_cluster_to_dataframe(df, labels):
 # RINGKASAN CLUSTER
 # =====================================================
 
-def cluster_summary(df_cluster):
-    """
-    Membuat ringkasan jumlah data tiap cluster.
-    """
+def cluster_summary(df):
 
     summary = (
-        df_cluster["Cluster"]
-        .value_counts()
-        .sort_index()
-        .reset_index()
-    )
-
-    summary.columns = [
-        "Cluster",
-        "Jumlah Data"
-    ]
-
-    mapping = {
-        0: "Pola Pemesanan Personal",
-        1: "Pola Pemesanan Reguler",
-        2: "Pola Pemesanan Kelompok"
-    }
-
-    summary["Interpretasi"] = (
-        summary["Cluster"]
-        .map(mapping)
+        df.groupby("interpretasi_cluster")
+        .size()
+        .reset_index(name="Jumlah Data")
     )
 
     return summary
