@@ -19,14 +19,16 @@ st.set_page_config(
 
 st.title("🎯 K-Means Clustering")
 
+st.markdown("---")
+
 # ==========================================================
-# CEK PREPROCESSING
+# VALIDASI
 # ==========================================================
 
 if "scaled_df" not in st.session_state:
 
     st.warning(
-        "Silakan jalankan halaman Preprocessing terlebih dahulu."
+        "Silakan lakukan preprocessing terlebih dahulu."
     )
 
     st.stop()
@@ -38,7 +40,7 @@ original_df = st.session_state["original_df"]
 # ELBOW METHOD
 # ==========================================================
 
-st.subheader("Elbow Method")
+st.subheader("📈 Elbow Method")
 
 elbow_df = elbow_method(
     scaled_df,
@@ -50,7 +52,7 @@ fig_elbow = px.line(
     x="K",
     y="WCSS",
     markers=True,
-    title="Grafik Elbow Method"
+    title="Elbow Method"
 )
 
 st.plotly_chart(
@@ -58,14 +60,18 @@ st.plotly_chart(
     use_container_width=True
 )
 
-st.divider()
+st.info(
+    "Penelitian ini menggunakan K = 3 sebagai jumlah cluster."
+)
+
+st.markdown("---")
 
 # ==========================================================
-# PROSES K-MEANS
+# PROSES CLUSTERING
 # ==========================================================
 
 if st.button(
-    "Jalankan K-Means (K = 3)",
+    "🚀 Jalankan K-Means",
     use_container_width=True
 ):
 
@@ -107,19 +113,30 @@ if st.button(
 
 if "hasil_cluster" in st.session_state:
 
-    st.subheader("Silhouette Score")
+    st.markdown("---")
 
-    st.metric(
-        "Nilai",
-        round(
-            st.session_state["silhouette"],
-            4
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.metric(
+            "Jumlah Cluster",
+            "3"
         )
-    )
 
-    st.divider()
+    with col2:
 
-    st.subheader("Centroid")
+        st.metric(
+            "Silhouette Score",
+            round(
+                st.session_state["silhouette"],
+                4
+            )
+        )
+
+    st.markdown("---")
+
+    st.subheader("📍 Centroid")
 
     st.dataframe(
         st.session_state["centroid"],
@@ -127,9 +144,9 @@ if "hasil_cluster" in st.session_state:
         hide_index=True
     )
 
-    st.divider()
+    st.markdown("---")
 
-    st.subheader("Statistik Cluster")
+    st.subheader("📊 Statistik Cluster")
 
     st.dataframe(
         st.session_state["cluster_statistics"],
@@ -137,15 +154,15 @@ if "hasil_cluster" in st.session_state:
         hide_index=True
     )
 
-    st.divider()
+    st.markdown("---")
 
-    st.subheader("Distribusi Cluster")
+    st.subheader("🥧 Distribusi Cluster")
 
     fig_pie = px.pie(
         st.session_state["summary_cluster"],
         names="cluster",
         values="Jumlah Data",
-        hole=0.5
+        hole=0.45
     )
 
     st.plotly_chart(
@@ -153,9 +170,9 @@ if "hasil_cluster" in st.session_state:
         use_container_width=True
     )
 
-    st.divider()
+    st.markdown("---")
 
-    st.subheader("Hasil Clustering")
+    st.subheader("📋 Hasil Clustering")
 
     st.dataframe(
         st.session_state["hasil_cluster"],
@@ -170,7 +187,7 @@ if "hasil_cluster" in st.session_state:
     )
 
     st.download_button(
-        label="Download Hasil Clustering",
+        label="⬇️ Download Hasil Clustering",
         data=csv,
         file_name="hasil_kmeans.csv",
         mime="text/csv",
