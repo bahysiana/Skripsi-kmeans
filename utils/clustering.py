@@ -1,4 +1,3 @@
-```python
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
@@ -8,11 +7,20 @@ from sklearn.metrics import silhouette_score
 # ELBOW METHOD
 # ==========================================================
 
-def elbow_method(data_scaled, max_k=10):
+def elbow_method(X_scaled, max_k=10):
+    """
+    Mengembalikan DataFrame berisi nilai WCSS
+    untuk K = 2 sampai max_k.
+    """
 
-    wcss = []
+    if len(X_scaled) < 2:
+        return pd.DataFrame(columns=["K", "WCSS"])
 
-    for k in range(2, max_k + 1):
+    max_cluster = min(max_k, len(X_scaled))
+
+    hasil = []
+
+    for k in range(2, max_cluster + 1):
 
         model = KMeans(
             n_clusters=k,
@@ -20,23 +28,21 @@ def elbow_method(data_scaled, max_k=10):
             n_init=10
         )
 
-        model.fit(data_scaled)
+        model.fit(X_scaled)
 
-        wcss.append(model.inertia_)
+        hasil.append({
+            "K": k,
+            "WCSS": model.inertia_
+        })
 
-    hasil = pd.DataFrame({
-        "K": list(range(2, max_k + 1)),
-        "WCSS": wcss
-    })
-
-    return hasil
+    return pd.DataFrame(hasil)
 
 
 # ==========================================================
 # MENJALANKAN K-MEANS
 # ==========================================================
 
-def run_kmeans(data_scaled):
+def run_kmeans(X_scaled):
 
     model = KMeans(
         n_clusters=3,
@@ -44,11 +50,11 @@ def run_kmeans(data_scaled):
         n_init=10
     )
 
-    labels = model.fit_predict(data_scaled)
+    labels = model.fit_predict(X_scaled)
 
     centroid = pd.DataFrame(
         model.cluster_centers_,
-        columns=data_scaled.columns
+        columns=X_scaled.columns
     )
 
     return model, labels, centroid
@@ -58,14 +64,16 @@ def run_kmeans(data_scaled):
 # SILHOUETTE SCORE
 # ==========================================================
 
-def calculate_silhouette(data_scaled, labels):
+def calculate_silhouette(X_scaled, labels):
 
     if len(set(labels)) < 2:
         return 0.0
 
-    return silhouette_score(
-        data_scaled,
-        labels
+    return float(
+        silhouette_score(
+            X_scaled,
+            labels
+        )
     )
 
 
@@ -83,20 +91,30 @@ def add_cluster_result(df, labels):
 
 
 # ==========================================================
-# INTERPRETASI CLUSTER
+# INTERPRETASI CLUSTER DINAMIS
 # ==========================================================
 
-def add_interpretation(df):
+def add_interpretation(df, centroid):
+
+    urutan = (
+        centroid["Total_harga"]
+        .sort_values()
+        .index
+        .tolist()
+    )
 
     mapping = {
-        0: "Pola Pemesanan Personal",
-        1: "Pola Pemesanan Reguler",
-        2: "Pola Pemesanan Kelompok"
+        urutan[0]: "Pola Pemesanan Personal",
+        urutan[1]: "Pola Pemesanan Reguler",
+        urutan[2]: "Pola Pemesanan Kelompok"
     }
 
     hasil = df.copy()
 
-    hasil["Interpretasi"] = hasil["cluster"].map(mapping)
+    hasil["Interpretasi"] = (
+        hasil["cluster"]
+        .map(mapping)
+    )
 
     return hasil
 
@@ -114,4 +132,28 @@ def cluster_summary(df):
     )
 
     return summary
-```
+
+
+# ==========================================================
+# RATA-RATA SETIAP CLUSTER
+# ==========================================================
+
+def cluster_statistics(df):
+
+    hasil = (
+        df.groupby("Interpretasi")[
+            [
+                "Total_harga",
+                "Jumlah_pesanan",
+                "rata_rata_harga",
+                "waktu_persiapan_yang_diberikan",
+                "waktu_persiapan_digunakan"
+            ]
+        ]
+        .mean()
+        .round(2)
+        .reset_index()
+    )
+
+    return hasil
+
