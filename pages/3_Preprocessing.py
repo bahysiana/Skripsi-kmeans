@@ -2,11 +2,11 @@ import streamlit as st
 import pandas as pd
 
 from utils.database import get_all_data
-from utils.preprocessing import preprocess_data
-
-# =====================================================
-# KONFIGURASI HALAMAN
-# =====================================================
+from utils.preprocessing import (
+    clean_dataframe,
+    preprocess_data,
+    get_feature_columns
+)
 
 st.set_page_config(
     page_title="Preprocessing",
@@ -14,36 +14,27 @@ st.set_page_config(
     layout="wide"
 )
 
-# =====================================================
-# HEADER
-# =====================================================
-
 st.title("🧹 Preprocessing Data")
-st.caption(
-    "Melakukan preprocessing menggunakan StandardScaler sebelum proses K-Means Clustering."
-)
 
-st.divider()
-
-# =====================================================
-# AMBIL DATA
-# =====================================================
+# ==========================================================
+# LOAD DATA
+# ==========================================================
 
 df = get_all_data()
 
 if df.empty:
 
     st.warning(
-        "⚠️ Database masih kosong. Silakan tambahkan atau import data terlebih dahulu."
+        "Database masih kosong."
     )
 
     st.stop()
 
-# =====================================================
+# ==========================================================
 # DATA ASLI
-# =====================================================
+# ==========================================================
 
-st.subheader("📋 Data Sebelum Preprocessing")
+st.subheader("Dataset Asli")
 
 st.dataframe(
     df,
@@ -53,60 +44,76 @@ st.dataframe(
 
 st.divider()
 
-# =====================================================
-# PROSES PREPROCESSING
-# =====================================================
+# ==========================================================
+# CLEANING
+# ==========================================================
 
-if st.button(
-    "🚀 Jalankan Preprocessing",
-    use_container_width=True
-):
+clean_df = clean_dataframe(df)
 
-    scaled_df, scaler = preprocess_data(df)
+st.subheader("Dataset Setelah Cleaning")
 
-    st.session_state["scaled_data"] = scaled_df
-    st.session_state["original_data"] = df
-    st.session_state["scaler"] = scaler
-
-    st.success(
-        "✅ Preprocessing berhasil dilakukan."
-    )
-
-# =====================================================
-# HASIL PREPROCESSING
-# =====================================================
-
-if "scaled_data" in st.session_state:
-
-    st.subheader("📊 Hasil StandardScaler")
-
-    st.dataframe(
-        st.session_state["scaled_data"],
-        use_container_width=True,
-        hide_index=True
-    )
-
-    csv = (
-        st.session_state["scaled_data"]
-        .to_csv(index=False)
-        .encode("utf-8")
-    )
-
-    st.download_button(
-        label="📥 Download Hasil Preprocessing",
-        data=csv,
-        file_name="hasil_preprocessing.csv",
-        mime="text/csv",
-        use_container_width=True
-    )
+st.dataframe(
+    clean_df,
+    use_container_width=True,
+    hide_index=True
+)
 
 st.divider()
 
-st.info(
-    """
-    Tahap preprocessing melakukan normalisasi data menggunakan
-    **StandardScaler** sehingga setiap variabel berada pada skala
-    yang sebanding sebelum diproses menggunakan algoritma
-    **K-Means Clustering**.
-    """
+# ==========================================================
+# FITUR YANG DIGUNAKAN
+# ==========================================================
+
+fitur = get_feature_columns()
+
+st.subheader("Fitur Clustering")
+
+st.write(fitur)
+
+st.divider()
+
+# ==========================================================
+# STANDARD SCALER
+# ==========================================================
+
+scaled_df, scaler = preprocess_data(df)
+
+st.subheader("Hasil StandardScaler")
+
+st.dataframe(
+    scaled_df,
+    use_container_width=True,
+    hide_index=True
 )
+
+# ==========================================================
+# SIMPAN KE SESSION
+# ==========================================================
+
+st.session_state["original_df"] = clean_df
+
+st.session_state["scaled_df"] = scaled_df
+
+st.session_state["scaler"] = scaler
+
+st.success(
+    "Preprocessing berhasil dilakukan."
+)
+
+st.divider()
+
+# ==========================================================
+# DOWNLOAD
+# ==========================================================
+
+csv = scaled_df.to_csv(
+    index=False
+).encode("utf-8")
+
+st.download_button(
+    label="Download Hasil Preprocessing",
+    data=csv,
+    file_name="hasil_preprocessing.csv",
+    mime="text/csv"
+)
+
