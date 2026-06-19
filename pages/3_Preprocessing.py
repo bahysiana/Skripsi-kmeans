@@ -1,6 +1,3 @@
-```python
-# pages/3_Preprocessing.py
-
 import streamlit as st
 import pandas as pd
 
@@ -150,4 +147,4 @@ st.download_button(
     mime="text/csv",
     use_container_width=True
 )
-```
+
