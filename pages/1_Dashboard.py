@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import plotly.express as px
 
@@ -130,4 +129,4 @@ st.info(
     **Preprocessing** kemudian **K-Means**.
     """
 )
-```
+
