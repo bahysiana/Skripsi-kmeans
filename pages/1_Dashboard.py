@@ -3,131 +3,123 @@ import plotly.express as px
 
 from utils.database import get_all_data
 
-# ==========================================================
-# KONFIGURASI HALAMAN
-# ==========================================================
-
 st.set_page_config(
     page_title="Dashboard",
     page_icon="📊",
     layout="wide"
 )
 
-st.title("📊 Dashboard Analisis Pola Transaksi Shopee Food")
+st.title("📊 Dashboard")
+
 st.caption(
-    "Analisis Menggunakan Metode K-Means Clustering"
+    "Ringkasan transaksi Shopee Food - Buffet The Padang Pasir"
 )
 
-st.divider()
-
-# ==========================================================
-# LOAD DATA
-# ==========================================================
+st.markdown("---")
 
 df = get_all_data()
 
 if df.empty:
 
     st.warning(
-        "Belum ada data. Silakan import data pada menu Kelola Data."
+        "Belum ada data. Silakan import dataset terlebih dahulu."
     )
 
     st.stop()
 
-# ==========================================================
-# METRIC
-# ==========================================================
+# =====================================================
+# KPI
+# =====================================================
 
 total_transaksi = len(df)
-
 total_omzet = df["Total_harga"].sum()
-
 total_item = df["Jumlah_pesanan"].sum()
+rata_rata = df["rata_rata_harga"].mean()
 
-rata_harga = df["rata_rata_harga"].mean()
+c1, c2, c3, c4 = st.columns(4)
 
-col1, col2, col3, col4 = st.columns(4)
+with c1:
+    st.metric(
+        "🧾 Total Transaksi",
+        f"{total_transaksi:,}"
+    )
 
-col1.metric(
-    "Total Transaksi",
-    f"{total_transaksi:,}"
-)
+with c2:
+    st.metric(
+        "💰 Total Omzet",
+        f"Rp {total_omzet:,.0f}"
+    )
 
-col2.metric(
-    "Total Omzet",
-    f"Rp {total_omzet:,.0f}"
-)
+with c3:
+    st.metric(
+        "📦 Total Item",
+        f"{int(total_item):,}"
+    )
 
-col3.metric(
-    "Total Item",
-    f"{int(total_item):,}"
-)
+with c4:
+    st.metric(
+        "🏷️ Rata-rata Harga",
+        f"Rp {rata_rata:,.0f}"
+    )
 
-col4.metric(
-    "Rata-rata Harga",
-    f"Rp {rata_harga:,.0f}"
-)
+st.markdown("---")
 
-st.divider()
+# =====================================================
+# GRAFIK
+# =====================================================
 
-# ==========================================================
-# HISTOGRAM TOTAL HARGA
-# ==========================================================
+left, right = st.columns(2)
 
-fig_total = px.histogram(
-    df,
-    x="Total_harga",
-    nbins=20,
-    title="Distribusi Total Harga"
-)
+with left:
 
-st.plotly_chart(
-    fig_total,
-    use_container_width=True
-)
+    fig1 = px.histogram(
+        df,
+        x="Total_harga",
+        nbins=25,
+        title="Distribusi Total Harga"
+    )
 
-# ==========================================================
-# HISTOGRAM JUMLAH PESANAN
-# ==========================================================
+    st.plotly_chart(
+        fig1,
+        use_container_width=True
+    )
 
-fig_jumlah = px.histogram(
-    df,
-    x="Jumlah_pesanan",
-    nbins=15,
-    title="Distribusi Jumlah Pesanan"
-)
+with right:
 
-st.plotly_chart(
-    fig_jumlah,
-    use_container_width=True
-)
+    fig2 = px.histogram(
+        df,
+        x="Jumlah_pesanan",
+        nbins=15,
+        title="Distribusi Jumlah Pesanan"
+    )
 
-# ==========================================================
-# SCATTER PLOT
-# ==========================================================
+    st.plotly_chart(
+        fig2,
+        use_container_width=True
+    )
 
-fig_scatter = px.scatter(
+st.markdown("---")
+
+fig3 = px.scatter(
     df,
     x="Jumlah_pesanan",
     y="Total_harga",
-    hover_data=["username"],
-    title="Jumlah Pesanan vs Total Harga"
+    size="rata_rata_harga",
+    hover_name="username",
+    title="Hubungan Jumlah Pesanan dan Total Harga"
 )
 
 st.plotly_chart(
-    fig_scatter,
+    fig3,
     use_container_width=True
 )
 
-# ==========================================================
-# PREVIEW DATA
-# ==========================================================
+st.markdown("---")
 
-st.subheader("Preview Dataset")
+st.subheader("📄 Preview Dataset")
 
 st.dataframe(
-    df.head(20),
+    df,
     use_container_width=True,
     hide_index=True
 )
-
