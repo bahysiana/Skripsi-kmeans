@@ -6,68 +6,87 @@ from sklearn.preprocessing import StandardScaler
 # MEMBERSIHKAN NILAI NUMERIK
 # =====================================================
 
-def clean_numeric(value):
+def clean_minutes(value):
     """
-    Mengubah nilai seperti:
-    - '13 menit' -> 13
-    - '20.000' -> 20000
-    - None -> 0
+    Mengubah:
+    '13 menit' -> 13
+    '8 menit' -> 8
+    15 -> 15
     """
 
     if pd.isna(value):
         return 0
 
-    value = str(value)
+    text = str(value).lower()
 
-    value = value.replace("menit", "")
-    value = value.replace(".", "")
-    value = value.replace(",", "")
-    value = value.strip()
+    text = text.replace("menit", "")
+
+    text = text.strip()
 
     try:
-        return float(value)
+        return float(text)
     except:
-        return 0
+        return 0.0
 
 
 # =====================================================
-# PREPROCESSING DATA
+# PREPROCESSING
 # =====================================================
 
 def preprocess_data(df):
-    """
-    Membersihkan data dan melakukan StandardScaler.
-    """
 
     data = df.copy()
 
-    # Membersihkan kolom numerik
-    data["Total_harga"] = data["Total_harga"].apply(clean_numeric)
-    data["Jumlah_pesanan"] = data["Jumlah_pesanan"].apply(clean_numeric)
-    data["rata_rata_harga"] = data["rata_rata_harga"].apply(clean_numeric)
+    # Bersihkan kolom waktu
     data["waktu_persiapan_yang_diberikan"] = (
-        data["waktu_persiapan_yang_diberikan"].apply(clean_numeric)
-    )
-    data["waktu_persiapan_digunakan"] = (
-        data["waktu_persiapan_digunakan"].apply(clean_numeric)
+        data["waktu_persiapan_yang_diberikan"]
+        .apply(clean_minutes)
     )
 
-    # Fitur yang digunakan untuk clustering
-    fitur = [
+    data["waktu_persiapan_digunakan"] = (
+        data["waktu_persiapan_digunakan"]
+        .apply(clean_minutes)
+    )
+
+    # Pastikan numerik
+    numeric_columns = [
+
         "Total_harga",
+
         "Jumlah_pesanan",
+
         "rata_rata_harga",
+
         "waktu_persiapan_yang_diberikan",
-        "waktu_persiapan_digunakan",
+
+        "waktu_persiapan_digunakan"
+
     ]
+
+    for col in numeric_columns:
+
+        data[col] = pd.to_numeric(
+            data[col],
+            errors="coerce"
+        )
+
+        data[col] = data[col].fillna(0)
 
     scaler = StandardScaler()
 
-    data_scaled = scaler.fit_transform(data[fitur])
+    scaled = scaler.fit_transform(
 
-    hasil = pd.DataFrame(
-        data_scaled,
-        columns=fitur
+        data[numeric_columns]
+
     )
 
-    return hasil, scaler
+    scaled_df = pd.DataFrame(
+
+        scaled,
+
+        columns=numeric_columns
+
+    )
+
+    return scaled_df, scaler
+
